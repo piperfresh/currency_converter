@@ -15,16 +15,16 @@ class RequestProvider extends StateNotifier<Map<String, String>> {
       required String to,
       required String amount,
       required String date}) {
-    print('who lala');
     state = {
       "from": from,
       "to": to,
       "amount": amount,
       "date": date,
     };
-
   }
 }
+
+final readText = StateProvider<String>((ref) => '');
 
 final requestProvider =
     StateNotifierProvider<RequestProvider, Map<String, String>>(

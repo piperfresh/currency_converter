@@ -3,10 +3,12 @@ import 'package:currency_converter/provider/request_provider.dart';
 import 'package:currency_converter/ui_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:svg_flutter/svg.dart';
 
 import '../shared/app_text_field.dart';
+import '../shared/currency_text_formatter.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -17,9 +19,10 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   final TextEditingController _dateController = TextEditingController();
+  TextEditingController amountController = TextEditingController();
   String selectedCurrency = "NGN";
   String selectedCurrency2 = "CAD";
-  TextEditingController amountController = TextEditingController();
+
   List<String> currencies = [
     "AUD",
     "BRL",
@@ -64,7 +67,6 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    print(currentDate);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Currency Converter'),
@@ -81,21 +83,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                   width: 300,
                   height: 50,
                   child: AppTextField(
-                    // suffixIcon: DropdownButton<String>(
-                    //   value: selectedCurrency,
-                    //   onChanged: (String? newValue) {
-                    //     setState(() {
-                    //       selectedCurrency = newValue!;
-                    //     });
-                    //   },
-                    //   items: currencies.map<DropdownMenuItem<String>>((String value) {
-                    //     return DropdownMenuItem<String>(
-                    //       value: value,
-                    //       child: Text(value),
-                    //     );
-                    //   }).toList(),
-                    // ),
-                    // hintText: 'Nigerian Naira',
                     hintText: selectedCurrency,
                   ),
                 ),
@@ -123,6 +110,12 @@ class _HomePageState extends ConsumerState<HomePage> {
             UiHelper.smallestVerticalSpacing,
             AppTextField(
               controller: amountController,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                CurrencyTextInputFormatter(),
+              ],
+              hintText: 'Enter amount',
             ),
             SvgPicture.asset(
               'assets/icons/arrow_in_arrow_out.svg',
@@ -139,22 +132,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                   width: 300,
                   height: 50,
                   child: AppTextField(
-                    // suffixIcon: DropdownButton<String>(
-                    //   value: selectedCurrency,
-                    //   onChanged: (String? newValue) {
-                    //     setState(() {
-                    //       selectedCurrency = newValue!;
-                    //     });
-                    //   },
-                    //   items: currencies.map<DropdownMenuItem<String>>((String value) {
-                    //     return DropdownMenuItem<String>(
-                    //       value: value,
-                    //       child: Text(value),
-                    //     );
-                    //   }).toList(),
-                    // ),
-
                     hintText: selectedCurrency2,
+                    readOnly: true,
                   ),
                 ),
                 SizedBox(
@@ -180,8 +159,15 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
             UiHelper.smallestVerticalSpacing,
             AppTextField(
-              hintText: ref.watch(readText),
+              hintText: ref.watch(readText).isEmpty
+                  ? 'Conversion Value'
+                  : NumberFormat.currency(symbol: '')
+                      .format(double.tryParse(ref.watch(readText)) ?? 0),
               readOnly: true,
+              hintStyle: GoogleFonts.openSans(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             UiHelper.smallestVerticalSpacing,
             Row(
@@ -230,11 +216,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    print('Mo ${ref.watch(readText.notifier).state}');
-                    final makeRequestProvider =
-                        ref.read(requestProvider.notifier);
-
-                    makeRequestProvider.makeRequest(
+                    ref.read(requestProvider.notifier).makeRequest(
                         from: selectedCurrency,
                         to: selectedCurrency2,
                         amount: amountController.text,
@@ -254,4 +236,3 @@ class _HomePageState extends ConsumerState<HomePage> {
 }
 
 
-final readText = StateProvider<String>((ref) => '');
